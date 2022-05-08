@@ -9,3 +9,5 @@ FROM atomix/codegen:$VERSION
 COPY atomix-gen-driver /usr/local/bin/atomix-gen-driver
 
 COPY templates/ /templates/
+
+ENTRYPOINT ["atomix-gen-driver"]

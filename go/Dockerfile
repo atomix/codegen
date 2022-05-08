@@ -7,3 +7,5 @@ ARG VERSION=latest
 FROM atomix/codegen:$VERSION
 
 COPY atomix-gen-go /usr/local/bin/atomix-gen-go
+
+ENTRYPOINT ["atomix-gen-go"]

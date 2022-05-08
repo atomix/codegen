@@ -7,3 +7,5 @@ ARG VERSION=latest
 FROM atomix/codegen:$VERSION
 
 COPY atomix-gen-docs /usr/local/bin/atomix-gen-docs
+
+ENTRYPOINT ["atomix-gen-docs"]
