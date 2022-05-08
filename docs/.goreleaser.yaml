@@ -1,0 +1,53 @@
+project_name: atomix-gen-docs
+
+monorepo:
+  tag_prefix: docs/
+  dir: docs
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: atomix-gen-docs
+    main: .
+    binary: atomix-gen-docs
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -s
+      - -X github.com/atomix/codegen/pkg/version.shortCommit={{ .ShortCommit }}
+      - -X github.com/atomix/codegen/pkg/version.commit={{ .FullCommit }}
+      - -X github.com/atomix/codegen/pkg/version.version=v{{ .Version }}
+      - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
+
+dockers:
+  - id: codegen-docs
+    ids:
+      - atomix-gen-docs
+    image_templates:
+      - "atomix/codegen:docs-latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:docs-{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:docs-v{{ .Major }}.{{ .Minor }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
