@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/atomix/api v0.0.0-20220506074308-e4e4551768d4
+	github.com/bmatcuk/doublestar/v4 v4.0.2
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/iancoleman/strcase v0.2.0

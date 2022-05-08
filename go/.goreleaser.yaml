@@ -1,9 +1,5 @@
 project_name: atomix-gen-go
 
-monorepo:
-  tag_prefix: go/
-  dir: go
-
 before:
   hooks:
     - go mod tidy
@@ -32,9 +28,9 @@ builds:
       - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
 
 dockers:
-  - id: codegen-client
+  - id: codegen-go
     ids:
-      - atomix-gen-client
+      - atomix-gen-go
     image_templates:
       - "atomix/codegen:go-latest"
       - "{{ if (not .IsSnapshot) }}atomix/codegen:go-{{ .Tag }}{{ end }}"

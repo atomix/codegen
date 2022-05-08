@@ -1,9 +1,5 @@
 project_name: atomix-gen-driver
 
-monorepo:
-  tag_prefix: driver/
-  dir: driver
-
 before:
   hooks:
     - go mod tidy
