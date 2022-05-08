@@ -1,0 +1,51 @@
+project_name: atomix-gen-example
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: atomix-gen-example
+    main: .
+    binary: atomix-gen-example
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -s
+      - -X github.com/atomix/codegen/pkg/version.shortCommit={{ .ShortCommit }}
+      - -X github.com/atomix/codegen/pkg/version.commit={{ .FullCommit }}
+      - -X github.com/atomix/codegen/pkg/version.version=v{{ .Version }}
+      - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
+
+dockers:
+  - id: codegen-example
+    ids:
+      - atomix-gen-example
+    image_templates:
+      - "atomix/codegen:example-latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:example-{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:example-v{{ .Major }}.{{ .Minor }}{{ end }}"
+    extra_files:
+      - templates/
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'

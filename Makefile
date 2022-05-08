@@ -6,7 +6,7 @@ GOLANG_CROSS_VERSION := v1.18.1
 
 .PHONY: build docs client driver go
 
-all: build build-client build-deps build-docs build-driver build-go
+all: build build-client build-deps build-docs build-driver build-example build-go
 
 build:
 	goreleaser release --snapshot --rm-dist
@@ -22,6 +22,9 @@ build-docs:
 
 build-driver:
 	$(MAKE) -C driver build
+
+build-example:
+	$(MAKE) -C example build
 
 build-go:
 	$(MAKE) -C go build
