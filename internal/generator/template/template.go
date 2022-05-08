@@ -6,17 +6,16 @@ package template
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 	"text/template"
 )
 
 // New creates a new Template for the given template file
-func New(path string) *template.Template {
+func New(name string) *template.Template {
 	names := make(map[string]string)
 	aliases := make(map[string]string)
 
-	t := template.New(filepath.Base(path))
+	t := template.New(name)
 	funcs := template.FuncMap{
 		"dir":          dir,
 		"base":         base,
@@ -55,5 +54,5 @@ func New(path string) *template.Template {
 			return buf.String(), err
 		},
 	}
-	return template.Must(t.Funcs(funcs).ParseFiles(path))
+	return t.Funcs(funcs)
 }
