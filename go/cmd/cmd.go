@@ -16,7 +16,7 @@ func GetCommand() *cobra.Command {
 	}
 	cmd.Flags().StringP("config", "c", "", "the path to the generator configuration")
 	cmd.Flags().StringP("proto-path", "p", ".", "the relative path to the Protobuf API root")
-	cmd.Flags().StringSliceP("proto-pattern", "f", []string{"**/*.proto"}, "a pattern by which to filter Protobuf sources")
+	cmd.Flags().StringSliceP("proto-files", "f", []string{"**/*.proto"}, "file name patterns by which to filter Protobuf sources")
 	cmd.Flags().StringP("go-path", "d", ".", "the relative path to the documentation root")
 	cmd.Flags().StringP("import-path", "i", "", "the base Go path for generated sources")
 	_ = cmd.MarkFlagFilename("config")

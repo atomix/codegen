@@ -29,11 +29,11 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	config.Proto.Path = protoPath
 
-	protoPatterns, err := cmd.Flags().GetStringSlice("proto-pattern")
+	protoFiles, err := cmd.Flags().GetStringSlice("proto-files")
 	if err != nil {
 		return err
 	}
-	config.Proto.Patterns = protoPatterns
+	config.Proto.Files = protoFiles
 
 	goPath, err := cmd.Flags().GetString("go-path")
 	if err != nil {

@@ -21,6 +21,9 @@ func Generate(config Config) error {
 }
 
 func NewGenerator(config Config) *Generator {
+	if config.Proto.Files == nil {
+		config.Proto.Files = []string{"**/*.proto"}
+	}
 	return &Generator{
 		Config: config,
 	}
@@ -35,7 +38,7 @@ func (g *Generator) Generate() error {
 	importMappings["google/protobuf/any.proto"] = "github.com/gogo/protobuf/types"
 	importMappings["google/protobuf/timestamp.proto"] = "github.com/gogo/protobuf/types"
 	importMappings["google/protobuf/duration.proto"] = "github.com/gogo/protobuf/types"
-	for _, pattern := range g.Config.Proto.Patterns {
+	for _, pattern := range g.Config.Proto.Files {
 		err := doublestar.GlobWalk(os.DirFS(g.Config.Proto.Path), pattern, func(path string, info fs.DirEntry) error {
 			if info.IsDir() {
 				return nil
@@ -80,7 +83,7 @@ type GoGenerator struct {
 }
 
 func (g *GoGenerator) Generate() error {
-	for _, pattern := range g.Config.Proto.Patterns {
+	for _, pattern := range g.Config.Proto.Files {
 		if err := NewGlob(g, pattern).Generate(); err != nil {
 			return err
 		}
