@@ -10,8 +10,8 @@ type Config struct {
 }
 
 type InputConfig struct {
-	Path     string   `yaml:"path,omitempty"`
-	Patterns []string `yaml:"patterns,omitempty"`
+	Path  string   `yaml:"path,omitempty"`
+	Files []string `yaml:"files,omitempty"`
 }
 
 type ModuleConfig struct {
@@ -19,15 +19,18 @@ type ModuleConfig struct {
 	Version string `yaml:"version,omitempty"`
 }
 
+type TemplateType string
+
+const (
+	AtomTemplate    TemplateType = "atom"
+	ManagerTemplate TemplateType = "manager"
+)
+
 type TemplateConfig struct {
 	Name   string       `yaml:"name,omitempty"`
+	Type   TemplateType `yaml:"type,omitempty"`
 	Path   string       `yaml:"path,omitempty"`
 	Output OutputConfig `yaml:"output,omitempty"`
-}
-
-type FilterConfig struct {
-	Atoms      []string `yaml:"atoms,omitempty"`
-	Components []string `yaml:"components,omitempty"`
 }
 
 type OutputConfig struct {

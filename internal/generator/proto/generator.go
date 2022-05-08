@@ -20,6 +20,9 @@ func Generate(config Config, values interface{}) error {
 }
 
 func NewGenerator(config Config) *Generator {
+	if config.Input.Files == nil {
+		config.Input.Files = []string{"**/*.proto"}
+	}
 	return &Generator{
 		Config: config,
 	}
@@ -30,7 +33,7 @@ type Generator struct {
 }
 
 func (g *Generator) Generate(values interface{}) error {
-	for _, pattern := range g.Config.Input.Patterns {
+	for _, pattern := range g.Config.Input.Files {
 		if err := NewGlob(g, pattern).Generate(values); err != nil {
 			return err
 		}
@@ -113,17 +116,17 @@ func (g *TemplateGenerator) Generate(values interface{}) error {
 	}
 	return g.gen(g.File, Spec{
 		Template: g.Template.Path,
+		Type:     string(g.Template.Type),
 		Output:   g.Template.Output.PathTemplate,
 		Values:   string(bytes),
 	})
 }
 
 type Spec struct {
-	Template  string
-	Output    string
-	Atom      string
-	Component string
-	Values    string
+	Template string
+	Type     string
+	Output   string
+	Values   string
 }
 
 func (s Spec) String() string {
@@ -131,5 +134,6 @@ func (s Spec) String() string {
 	elems = append(elems, fmt.Sprintf("template=%s", s.Template))
 	elems = append(elems, fmt.Sprintf("output=%s", s.Output))
 	elems = append(elems, fmt.Sprintf("values='%s'", s.Values))
+	elems = append(elems, fmt.Sprintf("component=%s", s.Type))
 	return strings.Join(elems, ",")
 }
