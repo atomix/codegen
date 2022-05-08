@@ -18,13 +18,10 @@ func Run(command string, args ...string) error {
 }
 
 func RunIn(dir string, command string, args ...string) error {
-	cmd := &exec.Cmd{
-		Dir:    dir,
-		Path:   command,
-		Args:   args,
-		Env:    os.Environ(),
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
