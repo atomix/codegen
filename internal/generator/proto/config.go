@@ -10,8 +10,15 @@ type Config struct {
 }
 
 type InputConfig struct {
-	Path  string   `yaml:"path,omitempty"`
-	Files []string `yaml:"files,omitempty"`
+	Repo  InputRepo `yaml:"repo,omitempty"`
+	Path  string    `yaml:"path,omitempty"`
+	Files []string  `yaml:"files,omitempty"`
+}
+
+type InputRepo struct {
+	URL    string `yaml:"url,omitempty"`
+	Branch string `yaml:"branch,omitempty"`
+	Tag    string `yaml:"tag,omitempty"`
 }
 
 type ModuleConfig struct {

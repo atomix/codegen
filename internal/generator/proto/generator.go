@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/atomix/codegen/internal/exec"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,6 +32,49 @@ type Generator struct {
 }
 
 func (g *Generator) Generate(values interface{}) error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	if g.Config.Input.Repo.URL != "" {
+		dir, err = ioutil.TempDir("", "input")
+		if err != nil {
+			return err
+		}
+		err = exec.Run("git", "clone", g.Config.Input.Repo.URL, dir)
+		if err != nil {
+			return err
+		}
+		if g.Config.Input.Repo.Branch != "" {
+			err = exec.RunIn(dir, "git", "checkout", g.Config.Input.Repo.Branch)
+			if err != nil {
+				return err
+			}
+		}
+		if g.Config.Input.Repo.Tag != "" {
+			err = exec.RunIn(dir, "git", "checkout", g.Config.Input.Repo.Tag)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return NewDir(g, dir).Generate(values)
+}
+
+func NewDir(parent *Generator, dir string) *DirGenerator {
+	return &DirGenerator{
+		Generator: parent,
+		Dir:       dir,
+	}
+}
+
+type DirGenerator struct {
+	*Generator
+	Dir string
+}
+
+func (g *DirGenerator) Generate(values interface{}) error {
 	for _, pattern := range g.Config.Input.Files {
 		if err := NewPath(g, pattern).Generate(values); err != nil {
 			return err
@@ -39,15 +83,15 @@ func (g *Generator) Generate(values interface{}) error {
 	return nil
 }
 
-func NewPath(parent *Generator, path string) *PathGenerator {
+func NewPath(parent *DirGenerator, path string) *PathGenerator {
 	return &PathGenerator{
-		Generator: parent,
-		Path:      path,
+		DirGenerator: parent,
+		Path:         path,
 	}
 }
 
 type PathGenerator struct {
-	*Generator
+	*DirGenerator
 	Path string
 }
 
@@ -74,7 +118,7 @@ type TemplateGenerator struct {
 
 func (g *TemplateGenerator) Generate(values interface{}) error {
 	var protoPath []string
-	protoPath = append(protoPath, ".")
+	protoPath = append(protoPath, g.Dir)
 	protoPath = append(protoPath, g.Config.Input.Path)
 	protoPath = append(protoPath, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gogo/protobuf"))
 
