@@ -1,9 +1,9 @@
-name: release
+name: release-client
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'client/v*'
   pull_request:
 
 jobs:
@@ -38,6 +38,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         if: success() && startsWith(github.ref, 'refs/tags/')
         with:
+          workdir: ./client
           version: latest
           args: release --rm-dist
         env:

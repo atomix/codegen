@@ -1,9 +1,9 @@
-name: release
+name: release-deps
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'deps/v*'
   pull_request:
 
 jobs:
@@ -38,6 +38,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         if: success() && startsWith(github.ref, 'refs/tags/')
         with:
+          workdir: ./deps
           version: latest
           args: release --rm-dist
         env:
