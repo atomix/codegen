@@ -1,0 +1,49 @@
+project_name: atomix-gen-deps
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: atomix-gen-deps
+    main: .
+    binary: atomix-gen-deps
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -s
+      - -X github.com/atomix/codegen/pkg/version.shortCommit={{ .ShortCommit }}
+      - -X github.com/atomix/codegen/pkg/version.commit={{ .FullCommit }}
+      - -X github.com/atomix/codegen/pkg/version.version=v{{ .Version }}
+      - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
+
+dockers:
+  - id: codegen-deps
+    ids:
+      - atomix-gen-deps
+    image_templates:
+      - "atomix/codegen:deps-latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:deps-{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:deps-v{{ .Major }}.{{ .Minor }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^deps:'

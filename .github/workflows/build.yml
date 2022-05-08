@@ -76,6 +76,14 @@ jobs:
           args: release --snapshot --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Run GoReleaser - Deps
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          workdir: ./deps
+          version: latest
+          args: release --snapshot --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Run GoReleaser - Docs
         uses: goreleaser/goreleaser-action@v2
         with:
