@@ -6,6 +6,7 @@ package template
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func Generate(config Config, values interface{}) error {
@@ -44,6 +45,10 @@ type TemplateGenerator struct {
 }
 
 func (g *TemplateGenerator) Generate(values interface{}) error {
+	err := os.MkdirAll(filepath.Dir(g.Template.Output.Path), 0755)
+	if err != nil {
+		return err
+	}
 	template, err := New(g.Template.Name).ParseFiles(g.Template.Path)
 	if err != nil {
 		return err
