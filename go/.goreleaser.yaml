@@ -1,0 +1,53 @@
+project_name: atomix-gen-go
+
+monorepo:
+  tag_prefix: go/
+  dir: go
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: atomix-gen-go
+    main: .
+    binary: atomix-gen-go
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -s
+      - -X github.com/atomix/codegen/pkg/version.shortCommit={{ .ShortCommit }}
+      - -X github.com/atomix/codegen/pkg/version.commit={{ .FullCommit }}
+      - -X github.com/atomix/codegen/pkg/version.version=v{{ .Version }}
+      - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
+
+dockers:
+  - id: codegen-client
+    ids:
+      - atomix-gen-client
+    image_templates:
+      - "atomix/codegen:go-latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:go-{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:go-v{{ .Major }}.{{ .Minor }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
