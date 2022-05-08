@@ -16,8 +16,6 @@ build:
 		-w /build \
 		goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release --snapshot --rm-dist
-	+$(MAKE) -C client
-	+$(MAKE) -C driver
 
 release:
 	docker run \
@@ -29,8 +27,6 @@ release:
 		-w /build \
 		goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release --rm-dist
-	+$(MAKE) -C client
-	+$(MAKE) -C driver
 
 reuse-tool: # @HELP install reuse if not present
 	command -v reuse || python3 -m pip install reuse
