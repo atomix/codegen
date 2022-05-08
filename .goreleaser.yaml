@@ -1,0 +1,43 @@
+project_name: atomix-codegen
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: protoc-gen-atom
+    main: ./cmd/protoc-gen-atom
+    binary: protoc-gen-atom
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+
+dockers:
+  - id: atomix-codegen
+    ids:
+      - protoc-gen-atom
+    image_templates:
+      - "atomix/codegen:latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:v{{ .Major }}.{{ .Minor }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
