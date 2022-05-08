@@ -6,10 +6,9 @@ package internal
 
 // Params is the parameters for the code generator
 type Params struct {
-	File    FileParams
 	Imports []PackageParams
 	Atom    AtomParams
-	Args    map[string]interface{}
+	Values  map[string]interface{}
 }
 
 type EntityParams struct {
@@ -58,7 +57,13 @@ type TypeParams struct {
 // AtomParams is the metadata for an atom
 type AtomParams struct {
 	ServiceParams
-	Name string
+	Manager ManagerParams
+	Name    string
+}
+
+// ManagerParams is the metadata for an atom manager
+type ManagerParams struct {
+	ServiceParams
 }
 
 // ServiceParams is the metadata for a service
@@ -126,4 +131,6 @@ type ResponseParams struct {
 type MethodTypeParams struct {
 	IsCommand bool
 	IsQuery   bool
+	IsCreate  bool
+	IsClose   bool
 }

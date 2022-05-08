@@ -5,12 +5,12 @@
 package internal
 
 import (
+	"errors"
 	runtimev1 "github.com/atomix/api/pkg/atomix/runtime/v1"
 	"github.com/atomix/codegen/internal/generator/template"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"path/filepath"
-	"strings"
 	gotemplate "text/template"
 )
 
@@ -42,74 +42,79 @@ func (m *Module) InitContext(c pgs.BuildContext) {
 
 // Execute executes the code generator
 func (m *Module) Execute(targets map[string]pgs.File, packages map[string]pgs.Package) []pgs.Artifact {
+	atoms := make(map[string]*protoAtom)
 	for _, target := range targets {
-		m.executeTarget(target)
+		for _, service := range target.Services() {
+			atomName, err := getAtomName(service)
+			if err != nil {
+				continue
+			}
+			atom, ok := atoms[atomName]
+			if !ok {
+				atom = &protoAtom{}
+				atoms[atomName] = atom
+			}
+
+			atomService := service
+			componentType, err := getComponentType(service)
+			if err != nil {
+				continue
+			}
+			switch componentType {
+			case runtimev1.ComponentType_ATOM:
+				atom.service = atomService
+			case runtimev1.ComponentType_MANAGER:
+				atom.manager = atomService
+			}
+		}
+	}
+
+	for _, atom := range atoms {
+		if atom.isComplete() {
+			m.generateAtom(atom)
+		}
 	}
 	return m.Artifacts()
 }
 
-func (m *Module) executeTarget(target pgs.File) {
-	println(target.File().InputPath())
-	for _, service := range target.Services() {
-		m.executeService(service)
-	}
-}
+func (m *Module) getAtomParams(atom *protoAtom) (AtomParams, error) {
+	var atomParams AtomParams
 
-// executeService generates a store from a Protobuf service
-//nolint:gocyclo
-func (m *Module) executeService(service pgs.Service) {
-	atomName, err := getAtomName(service)
+	atomName, err := getAtomName(atom.service)
 	if err != nil {
-		return
+		return atomParams, err
 	}
-
-	componentType, err := getComponentType(service)
-	if err != nil {
-		return
-	}
-
-	if filter, enabled := m.ctx.AtomFilter(); enabled {
-		if atomName != filter {
-			return
-		}
-	}
-	if filter, enabled := m.ctx.ComponentFilter(); enabled {
-		switch componentType {
-		case runtimev1.ComponentType_ATOM:
-			if strings.ToLower(filter) != "atom" {
-				return
-			}
-		case runtimev1.ComponentType_MANAGER:
-			if strings.ToLower(filter) != "manager" {
-				return
-			}
-		}
-	}
+	atomParams.Name = atomName
 
 	// Iterate through the methods on the service and construct method metadata for the template.
 	methods := make([]MethodParams, 0)
-	for _, method := range service.Methods() {
+	for _, method := range atom.service.Methods() {
 		operationID, err := getOperationID(method)
 		if err != nil {
-			panic(err)
+			return atomParams, err
 		}
 
 		// Get the operation type for the method.
 		operationType, err := getOperationType(method)
 		if err != nil {
-			panic(err)
+			return atomParams, err
 		}
 
-		methodTypeParams := MethodTypeParams{
-			IsCommand: operationType == runtimev1.OperationType_COMMAND,
-			IsQuery:   operationType == runtimev1.OperationType_QUERY,
+		var methodTypeParams MethodTypeParams
+		switch operationType {
+		case runtimev1.OperationType_COMMAND:
+			methodTypeParams.IsCommand = true
+		case runtimev1.OperationType_QUERY:
+			methodTypeParams.IsQuery = true
+		default:
+			return atomParams, errors.New("atom service can only contain COMMAND or QUERY type operations")
 		}
 
 		requestHeaders, err := m.ctx.HeadersFieldParams(method.Input())
 		if err != nil {
-			panic(err)
+			return atomParams, err
 		} else if requestHeaders == nil {
-			panic("no request headers found on method input " + method.Input().FullyQualifiedName())
+			return atomParams, errors.New("no request headers found on method input " + method.Input().FullyQualifiedName())
 		}
 
 		requestParams := RequestParams{
@@ -123,9 +128,9 @@ func (m *Module) executeService(service pgs.Service) {
 
 		responseHeaders, err := m.ctx.HeadersFieldParams(method.Output())
 		if err != nil {
-			panic(err)
+			return atomParams, err
 		} else if responseHeaders == nil {
-			panic("no request headers found on method input " + method.Output().FullyQualifiedName())
+			return atomParams, errors.New("no request headers found on method input " + method.Output().FullyQualifiedName())
 		}
 
 		// Generate output metadata from the output type.
@@ -150,25 +155,127 @@ func (m *Module) executeService(service pgs.Service) {
 		methods = append(methods, methodParams)
 	}
 
-	atomParams := AtomParams{
-		Name: atomName,
-		ServiceParams: ServiceParams{
-			Type: ServiceTypeParams{
-				EntityParams: m.ctx.EntityParams(service),
-				Name:         pgsgo.PGGUpperCamelCase(service.Name()).String(),
-			},
-			Comment: service.SourceCodeInfo().LeadingComments(),
-			Methods: methods,
+	atomParams.ServiceParams = ServiceParams{
+		Type: ServiceTypeParams{
+			EntityParams: m.ctx.EntityParams(atom.service),
+			Name:         pgsgo.PGGUpperCamelCase(atom.service.Name()).String(),
 		},
+		Comment: atom.service.SourceCodeInfo().LeadingComments(),
+		Methods: methods,
+	}
+
+	managerParams, err := m.getManagerParams(atom)
+	if err != nil {
+		return atomParams, err
+	}
+	atomParams.Manager = managerParams
+	return atomParams, nil
+}
+
+func (m *Module) getManagerParams(atom *protoAtom) (ManagerParams, error) {
+	var managerParams ManagerParams
+
+	// Iterate through the methods on the service and construct method metadata for the template.
+	methods := make([]MethodParams, 0)
+	for _, method := range atom.service.Methods() {
+		operationID, err := getOperationID(method)
+		if err != nil {
+			return managerParams, err
+		}
+
+		// Get the operation type for the method.
+		operationType, err := getOperationType(method)
+		if err != nil {
+			return managerParams, err
+		}
+
+		var methodTypeParams MethodTypeParams
+		switch operationType {
+		case runtimev1.OperationType_CREATE:
+			methodTypeParams.IsCreate = true
+		case runtimev1.OperationType_CLOSE:
+			methodTypeParams.IsClose = true
+		default:
+			panic("manager service can only contain CREATE or CLOSE type operations")
+		}
+
+		requestHeaders, err := m.ctx.HeadersFieldParams(method.Input())
+		if err != nil {
+			return managerParams, err
+		} else if requestHeaders == nil {
+			return managerParams, errors.New("no request headers found on method input " + method.Input().FullyQualifiedName())
+		}
+
+		requestParams := RequestParams{
+			MessageParams: MessageParams{
+				Type: m.ctx.MessageTypeParams(method.Input()),
+			},
+			Headers:  *requestHeaders,
+			IsUnary:  !method.ClientStreaming(),
+			IsStream: method.ClientStreaming(),
+		}
+
+		responseHeaders, err := m.ctx.HeadersFieldParams(method.Output())
+		if err != nil {
+			return managerParams, err
+		} else if responseHeaders == nil {
+			return managerParams, errors.New("no request headers found on method input " + method.Output().FullyQualifiedName())
+		}
+
+		// Generate output metadata from the output type.
+		responseParams := ResponseParams{
+			MessageParams: MessageParams{
+				Type: m.ctx.MessageTypeParams(method.Output()),
+			},
+			Headers:  *responseHeaders,
+			IsUnary:  !method.ServerStreaming(),
+			IsStream: method.ServerStreaming(),
+		}
+
+		methodParams := MethodParams{
+			ID:       operationID,
+			Name:     method.Name().UpperCamelCase().String(),
+			Comment:  method.SourceCodeInfo().LeadingComments(),
+			Type:     methodTypeParams,
+			Request:  requestParams,
+			Response: responseParams,
+		}
+
+		methods = append(methods, methodParams)
+	}
+
+	managerParams.ServiceParams = ServiceParams{
+		Type: ServiceTypeParams{
+			EntityParams: m.ctx.EntityParams(atom.manager),
+			Name:         pgsgo.PGGUpperCamelCase(atom.manager.Name()).String(),
+		},
+		Comment: atom.manager.SourceCodeInfo().LeadingComments(),
+		Methods: methods,
+	}
+	return managerParams, nil
+}
+
+func (m *Module) generateAtom(atom *protoAtom) {
+	atomParams, err := m.getAtomParams(atom)
+	if err != nil {
+		panic(err)
 	}
 
 	// Generate the store metadata.
 	params := Params{
-		File: m.ctx.FileParams(service),
-		Atom: atomParams,
-		Args: m.ctx.Args(),
+		Atom:   atomParams,
+		Values: m.ctx.Values(),
 	}
 
 	tpl := gotemplate.Must(template.New(filepath.Base(m.ctx.TemplatePath())).ParseFiles(m.ctx.TemplatePath()))
 	m.OverwriteGeneratorTemplateFile(m.OutputPath(), tpl, params)
+}
+
+type protoAtom struct {
+	service pgs.Service
+	manager pgs.Service
+}
+
+func (a *protoAtom) isComplete() bool {
+	return a.service != nil && a.manager != nil
 }

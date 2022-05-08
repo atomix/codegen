@@ -16,11 +16,10 @@ import (
 )
 
 const (
-	templateParamKey  = "template"
-	outputParamKey    = "output"
-	atomParamKey      = "atom"
-	componentParamKey = "component"
-	argSep            = "."
+	templateParamKey = "template"
+	outputParamKey   = "output"
+	valuesPrefix     = "values."
+	valuesSep        = "."
 )
 
 // newContext creates a new metadata context
@@ -33,22 +32,6 @@ func newContext(ctx pgsgo.Context) *Context {
 // Context is the code generation context
 type Context struct {
 	ctx pgsgo.Context
-}
-
-func (c *Context) AtomFilter() (string, bool) {
-	atom := c.ctx.Params().Str(atomParamKey)
-	if atom == "" {
-		return atom, false
-	}
-	return atom, true
-}
-
-func (c *Context) ComponentFilter() (string, bool) {
-	component := c.ctx.Params().Str(componentParamKey)
-	if component == "" {
-		return component, false
-	}
-	return component, true
 }
 
 func (c *Context) TemplatePath() string {
@@ -73,11 +56,14 @@ func (c *Context) ImportPath(entity pgs.Entity) string {
 	return c.ctx.ImportPath(entity).String()
 }
 
-func (c *Context) Args() map[string]interface{} {
+func (c *Context) Values() map[string]interface{} {
 	args := make(map[string]interface{})
 	for key, value := range c.ctx.Params() {
+		if strings.HasPrefix(key, valuesPrefix) {
+
+		}
 		arg := key[1:]
-		names := strings.Split(arg, argSep)
+		names := strings.Split(arg, valuesSep)
 		parent := args
 		for i := 0; i < len(names)-1; i++ {
 			name := names[i]

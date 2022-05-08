@@ -84,13 +84,35 @@ func run(cmd *cobra.Command, args []string) error {
 						Path: filepath.Join(outputPath, "Makefile"),
 					},
 				},
+				{
+					Name: "go.mod",
+					Path: getTemplatePath("go.mod.tpl"),
+					Output: template.OutputConfig{
+						Path: filepath.Join(outputPath, "go.mod"),
+					},
+				},
+				{
+					Name: "driver.go",
+					Path: getTemplatePath("driver.go.tpl"),
+					Output: template.OutputConfig{
+						Path: filepath.Join(outputPath, "driver/driver.go"),
+					},
+				},
 			},
 		},
 		Proto: &proto.Config{
 			Input: proto.InputConfig{
 				Path: inputPath,
 			},
-			Templates: []proto.TemplateConfig{},
+			Templates: []proto.TemplateConfig{
+				{
+					Name: "atom.go",
+					Path: getTemplatePath("atom.go.tpl"),
+					Output: proto.OutputConfig{
+						PathTemplate: "driver/{{ .Atom | toSnake }}.go",
+					},
+				},
+			},
 		},
 	}
 

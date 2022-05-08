@@ -21,14 +21,8 @@ type ModuleConfig struct {
 
 type TemplateType string
 
-const (
-	AtomTemplate    TemplateType = "atom"
-	ManagerTemplate TemplateType = "manager"
-)
-
 type TemplateConfig struct {
 	Name   string       `yaml:"name,omitempty"`
-	Type   TemplateType `yaml:"type,omitempty"`
 	Path   string       `yaml:"path,omitempty"`
 	Output OutputConfig `yaml:"output,omitempty"`
 }

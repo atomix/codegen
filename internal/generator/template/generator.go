@@ -5,9 +5,7 @@
 package template
 
 import (
-	"fmt"
 	"os"
-	"strings"
 )
 
 func Generate(config Config, values interface{}) error {
@@ -54,35 +52,12 @@ func (g *TemplateGenerator) Generate(values interface{}) error {
 	if err != nil {
 		return err
 	}
-	return template.Execute(file, values)
+	params := Params{
+		Values: values,
+	}
+	return template.Execute(file, params)
 }
 
-type Spec struct {
-	Template  string
-	Output    string
-	Atom      string
-	Component string
-	Args      map[string]string
-}
-
-func (s Spec) String() string {
-	var elems []string
-	elems = append(elems, formatArg("template", s.Template))
-	elems = append(elems, formatArg("output", s.Output))
-	if s.Args != nil {
-		for key, value := range s.Args {
-			elems = append(elems, formatArg(key, value))
-		}
-	}
-	if s.Atom != "" {
-		elems = append(elems, formatArg("atom", s.Atom))
-	}
-	if s.Component != "" {
-		elems = append(elems, formatArg("component", s.Component))
-	}
-	return strings.Join(elems, ",")
-}
-
-func formatArg(key, value string) string {
-	return fmt.Sprintf("%s=%s", key, value)
+type Params struct {
+	Values interface{}
 }

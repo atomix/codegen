@@ -8,8 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/atomix/codegen/internal/exec"
-	"github.com/bmatcuk/doublestar/v4"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,61 +32,26 @@ type Generator struct {
 
 func (g *Generator) Generate(values interface{}) error {
 	for _, pattern := range g.Config.Input.Files {
-		if err := NewGlob(g, pattern).Generate(values); err != nil {
+		if err := NewPath(g, pattern).Generate(values); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (g *Generator) gen(file string, spec Spec) error {
-	var path []string
-	path = append(path, ".")
-	path = append(path, g.Config.Input.Path)
-	path = append(path, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gogo/protobuf"))
-
-	var args []string
-	args = append(args, "-I", strings.Join(path, ":"))
-	args = append(args, "--template_out=%s", spec.String())
-	args = append(args, file)
-
-	return exec.Run("protoc", args...)
-}
-
-func NewGlob(generator *Generator, pattern string) *GlobGenerator {
-	return &GlobGenerator{
-		Generator: generator,
-		Pattern:   pattern,
+func NewPath(parent *Generator, path string) *PathGenerator {
+	return &PathGenerator{
+		Generator: parent,
+		Path:      path,
 	}
 }
 
-type GlobGenerator struct {
+type PathGenerator struct {
 	*Generator
-	Pattern string
+	Path string
 }
 
-func (g *GlobGenerator) Generate(values interface{}) error {
-	return doublestar.GlobWalk(os.DirFS(g.Config.Input.Path), g.Pattern, func(path string, info fs.DirEntry) error {
-		if info.IsDir() {
-			return nil
-		}
-		return NewFile(g, path).Generate(values)
-	})
-}
-
-func NewFile(parent *GlobGenerator, file string) *FileGenerator {
-	return &FileGenerator{
-		GlobGenerator: parent,
-		File:          file,
-	}
-}
-
-type FileGenerator struct {
-	*GlobGenerator
-	File string
-}
-
-func (g *FileGenerator) Generate(values interface{}) error {
+func (g *PathGenerator) Generate(values interface{}) error {
 	for _, template := range g.Config.Templates {
 		if err := NewTemplate(g, template).Generate(values); err != nil {
 			return err
@@ -97,43 +60,39 @@ func (g *FileGenerator) Generate(values interface{}) error {
 	return nil
 }
 
-func NewTemplate(parent *FileGenerator, template TemplateConfig) *TemplateGenerator {
+func NewTemplate(parent *PathGenerator, template TemplateConfig) *TemplateGenerator {
 	return &TemplateGenerator{
-		FileGenerator: parent,
+		PathGenerator: parent,
 		Template:      template,
 	}
 }
 
 type TemplateGenerator struct {
-	*FileGenerator
+	*PathGenerator
 	Template TemplateConfig
 }
 
 func (g *TemplateGenerator) Generate(values interface{}) error {
+	var protoPath []string
+	protoPath = append(protoPath, ".")
+	protoPath = append(protoPath, g.Config.Input.Path)
+	protoPath = append(protoPath, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gogo/protobuf"))
+
 	bytes, err := json.Marshal(values)
 	if err != nil {
 		return err
 	}
-	return g.gen(g.File, Spec{
-		Template: g.Template.Path,
-		Type:     string(g.Template.Type),
-		Output:   g.Template.Output.PathTemplate,
-		Values:   string(bytes),
-	})
-}
 
-type Spec struct {
-	Template string
-	Type     string
-	Output   string
-	Values   string
-}
+	var specArgs []string
+	specArgs = append(specArgs, fmt.Sprintf("template=%s", g.Template.Path))
+	specArgs = append(specArgs, fmt.Sprintf("output=%s", g.Template.Output.PathTemplate))
+	specArgs = append(specArgs, fmt.Sprintf("values='%s'", string(bytes)))
+	spec := strings.Join(specArgs, ",")
 
-func (s Spec) String() string {
-	var elems []string
-	elems = append(elems, fmt.Sprintf("template=%s", s.Template))
-	elems = append(elems, fmt.Sprintf("output=%s", s.Output))
-	elems = append(elems, fmt.Sprintf("values='%s'", s.Values))
-	elems = append(elems, fmt.Sprintf("component=%s", s.Type))
-	return strings.Join(elems, ",")
+	var protoArgs []string
+	protoArgs = append(protoArgs, "-I", strings.Join(protoPath, ":"))
+	protoArgs = append(protoArgs, "--template_out=%s", spec)
+	protoArgs = append(protoArgs, g.Path)
+
+	return exec.Run("protoc", protoArgs...)
 }
