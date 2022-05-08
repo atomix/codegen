@@ -8,7 +8,17 @@ import "github.com/spf13/cobra"
 
 func GetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "atomix-gen-go",
+		Use:     "atomix-gen-go",
+		Short:   "Generates Go sources from Protobuf sources",
+		Aliases: []string{"golang"},
+		Args:    cobra.NoArgs,
+		RunE:    run,
 	}
+	cmd.Flags().StringP("config", "c", "", "the path to the generator configuration")
+	cmd.Flags().StringP("proto-path", "p", ".", "the relative path to the Protobuf API root")
+	cmd.Flags().StringSliceP("proto-pattern", "f", []string{"**/*.proto"}, "a pattern by which to filter Protobuf sources")
+	cmd.Flags().StringP("go-path", "d", ".", "the relative path to the documentation root")
+	cmd.Flags().StringP("import-path", "i", "", "the base Go path for generated sources")
+	_ = cmd.MarkFlagFilename("config")
 	return cmd
 }
