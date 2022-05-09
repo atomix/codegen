@@ -50,6 +50,7 @@ func (g *Generator) Generate(values interface{}) error {
 		if err != nil {
 			return err
 		}
+		defer os.RemoveAll(dir)
 		err = exec.Run("git", "clone", g.Config.Input.Repo.URL, dir)
 		if err != nil {
 			return err
