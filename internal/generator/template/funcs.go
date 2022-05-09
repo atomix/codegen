@@ -39,6 +39,10 @@ func rel(basepath, targetpath string) string {
 	return path
 }
 
+func toSnakeCase(value string) string {
+	return strcase.ToSnake(value)
+}
+
 func toCamelCase(value string) string {
 	return strcase.ToCamel(value)
 }

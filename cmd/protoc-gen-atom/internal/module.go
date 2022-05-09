@@ -38,6 +38,9 @@ func (m *Module) Name() string {
 func (m *Module) InitContext(c pgs.BuildContext) {
 	m.ModuleBase.InitContext(c)
 	m.ctx = newContext(pgsgo.InitContext(c.Parameters()))
+	for key, value := range c.Parameters() {
+		c.Logf("%s=%s", key, value)
+	}
 }
 
 // Execute executes the code generator
@@ -177,7 +180,7 @@ func (m *Module) getManagerParams(atom *protoAtom) (ManagerParams, error) {
 
 	// Iterate through the methods on the service and construct method metadata for the template.
 	methods := make([]MethodParams, 0)
-	for _, method := range atom.service.Methods() {
+	for _, method := range atom.manager.Methods() {
 		operationID, err := getOperationID(method)
 		if err != nil {
 			return managerParams, err
@@ -261,14 +264,21 @@ func (m *Module) generateAtom(atom *protoAtom) {
 		panic(err)
 	}
 
+	values, err := m.ctx.Values()
+	if err != nil {
+		panic(err)
+	}
+
 	// Generate the store metadata.
 	params := Params{
 		Atom:   atomParams,
-		Values: m.ctx.Values(),
+		Values: values,
 	}
 
+	outputPath := m.ctx.OutputPath(params)
+	m.Logf("%s => ", atomParams.Name, outputPath)
 	tpl := gotemplate.Must(template.New(filepath.Base(m.ctx.TemplatePath())).ParseFiles(m.ctx.TemplatePath()))
-	m.OverwriteGeneratorTemplateFile(m.OutputPath(), tpl, params)
+	m.OverwriteGeneratorTemplateFile(outputPath, tpl, params)
 }
 
 type protoAtom struct {

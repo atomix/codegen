@@ -6,20 +6,20 @@ package internal
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	runtimev1 "github.com/atomix/api/pkg/atomix/runtime/v1"
+	"github.com/atomix/codegen/internal/generator/template"
 	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"path/filepath"
-	"strings"
-	"text/template"
 )
 
 const (
 	templateParamKey = "template"
 	outputParamKey   = "output"
-	valuesPrefix     = "values."
-	valuesSep        = "."
+	valuesParamKey   = "values"
 )
 
 // newContext creates a new metadata context
@@ -38,46 +38,40 @@ func (c *Context) TemplatePath() string {
 	return c.ctx.Params().Str(templateParamKey)
 }
 
-func (c *Context) OutputPath(entity pgs.Entity) (string, error) {
+func (c *Context) OutputPath(params Params) string {
 	outputTemplate := c.ctx.Params().Str(outputParamKey)
-	template, err := template.New(outputParamKey).Parse(outputTemplate)
+	decodedTemplate, err := base64.RawURLEncoding.DecodeString(outputTemplate)
 	if err != nil {
-		return "", err
+		panic(err)
+	}
+
+	template, err := template.New(outputParamKey).Parse(string(decodedTemplate))
+	if err != nil {
+		panic(err)
 	}
 
 	var buf bytes.Buffer
-	if err := template.Execute(&buf, c.EntityParams(entity)); err != nil {
-		return "", nil
+	if err := template.Execute(&buf, params); err != nil {
+		panic(err)
 	}
-	return buf.String(), nil
+	return buf.String()
 }
 
 func (c *Context) ImportPath(entity pgs.Entity) string {
 	return c.ctx.ImportPath(entity).String()
 }
 
-func (c *Context) Values() map[string]interface{} {
-	args := make(map[string]interface{})
-	for key, value := range c.ctx.Params() {
-		if strings.HasPrefix(key, valuesPrefix) {
-
-		}
-		arg := key[1:]
-		names := strings.Split(arg, valuesSep)
-		parent := args
-		for i := 0; i < len(names)-1; i++ {
-			name := names[i]
-			child, ok := parent[name]
-			if !ok {
-				child = make(map[string]interface{})
-				parent[name] = child
-			}
-			parent = child.(map[string]interface{})
-		}
-		lastName := names[len(names)-1]
-		parent[lastName] = value
+func (c *Context) Values() (map[string]interface{}, error) {
+	encodedValues := c.ctx.Params().Str(valuesParamKey)
+	decodedValues, err := base64.RawURLEncoding.DecodeString(encodedValues)
+	if err != nil {
+		return nil, err
 	}
-	return args
+	values := make(map[string]interface{})
+	if err := json.Unmarshal(decodedValues, &values); err != nil {
+		return nil, err
+	}
+	return values, nil
 }
 
 // FilePath returns the output path for the given entity
@@ -108,17 +102,6 @@ func (c *Context) EntityParams(entity pgs.Entity) EntityParams {
 	return EntityParams{
 		File:    c.FileParams(entity),
 		Package: c.PackageParams(entity),
-	}
-}
-
-// TargetParams extracts the target parameters for the given entity
-func (c *Context) TargetParams(entity pgs.Entity) FileParams {
-	outputFile, err := c.OutputPath(entity)
-	if err != nil {
-		panic(err)
-	}
-	return FileParams{
-		Path: c.FilePath(entity, outputFile),
 	}
 }
 
@@ -442,7 +425,7 @@ func (c *Context) EnumValueTypeParams(enumValue pgs.EnumValue) TypeParams {
 
 // HeadersFieldParams extracts the metadata for the headers field in the given message
 func (c *Context) HeadersFieldParams(message pgs.Message) (*FieldRefParams, error) {
-	return c.findAnnotatedField(message, getExtensionDesc(runtimev1.E_Headers))
+	return c.findAnnotatedField(message, runtimev1.E_Headers)
 }
 
 func (c *Context) findAnnotatedField(message pgs.Message, extension *proto.ExtensionDesc) (*FieldRefParams, error) {

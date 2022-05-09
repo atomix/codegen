@@ -19,7 +19,7 @@ RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.19
     unzip -o protoc-3.19.4-linux-x86_64.zip -d /usr/local include/* && \
     rm -rf protoc-3.19.4-linux-x86_64.zip
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0 && \
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && \
     go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest && \
     export GO111MODULE=off && \

@@ -49,7 +49,7 @@ func (g *TemplateGenerator) Generate(values interface{}) error {
 	if err != nil {
 		return err
 	}
-	template, err := New(g.Template.Name).ParseFiles(g.Template.Path)
+	template, err := New(filepath.Base(g.Template.Path)).ParseFiles(g.Template.Path)
 	if err != nil {
 		return err
 	}

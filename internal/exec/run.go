@@ -7,6 +7,7 @@ package exec
 import (
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func Run(command string, args ...string) error {
@@ -23,5 +24,6 @@ func RunIn(dir string, command string, args ...string) error {
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	println(strings.Join(append([]string{cmd.Path}, cmd.Args...), " "))
 	return cmd.Run()
 }

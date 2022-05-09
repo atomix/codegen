@@ -18,7 +18,7 @@ import (
 // getAtomName gets the name extension from the given service
 func getAtomName(service pgs.Service) (string, error) {
 	var name string
-	ok, err := service.Extension(getExtensionDesc(runtimev1.E_Name), &name)
+	ok, err := service.Extension(runtimev1.E_Name, &name)
 	if err != nil {
 		return "", err
 	} else if !ok {
@@ -30,7 +30,7 @@ func getAtomName(service pgs.Service) (string, error) {
 // getComponentType gets the name extension from the given service
 func getComponentType(service pgs.Service) (runtimev1.ComponentType, error) {
 	var componentType runtimev1.ComponentType
-	ok, err := service.Extension(getExtensionDesc(runtimev1.E_Component), &componentType)
+	ok, err := service.Extension(runtimev1.E_Component, &componentType)
 	if err != nil {
 		return 0, err
 	} else if !ok {
@@ -42,7 +42,7 @@ func getComponentType(service pgs.Service) (runtimev1.ComponentType, error) {
 // getOperationID gets the id extension from the given method
 func getOperationID(method pgs.Method) (uint32, error) {
 	var operationID uint32
-	ok, err := method.Extension(getExtensionDesc(runtimev1.E_OperationId), &operationID)
+	ok, err := method.Extension(runtimev1.E_OperationId, &operationID)
 	if err != nil {
 		return 0, err
 	} else if !ok {
@@ -54,7 +54,7 @@ func getOperationID(method pgs.Method) (uint32, error) {
 // getOperationType gets the optype extension from the given method
 func getOperationType(method pgs.Method) (runtimev1.OperationType, error) {
 	var operationType runtimev1.OperationType
-	ok, err := method.Extension(getExtensionDesc(runtimev1.E_OperationType), &operationType)
+	ok, err := method.Extension(runtimev1.E_OperationType, &operationType)
 	if err != nil {
 		return 0, err
 	} else if !ok {
@@ -66,24 +66,13 @@ func getOperationType(method pgs.Method) (runtimev1.OperationType, error) {
 // getHeaders gets the headers extension from the given field
 func getHeaders(field pgs.Field) (bool, error) {
 	var headers bool
-	ok, err := field.Extension(getExtensionDesc(runtimev1.E_Headers), &headers)
+	ok, err := field.Extension(runtimev1.E_Headers, &headers)
 	if err != nil {
 		return false, err
 	} else if !ok {
 		return false, nil
 	}
 	return headers, nil
-}
-
-func getExtensionDesc(extension *gogoprotobuf.ExtensionDesc) *proto.ExtensionDesc {
-	return &proto.ExtensionDesc{
-		ExtendedType:  (*descriptor.FieldOptions)(nil),
-		ExtensionType: extension.ExtensionType,
-		Field:         extension.Field,
-		Name:          extension.Name,
-		Tag:           extension.Tag,
-		Filename:      extension.Filename,
-	}
 }
 
 // getEmbed gets the embed extension from the given field
@@ -168,4 +157,15 @@ func getNullable(field pgs.Field) (*bool, error) {
 		return nil, nil
 	}
 	return &nullable, nil
+}
+
+func getExtensionDesc(extension *gogoprotobuf.ExtensionDesc) *proto.ExtensionDesc {
+	return &proto.ExtensionDesc{
+		ExtendedType:  (*descriptor.FieldOptions)(nil),
+		ExtensionType: extension.ExtensionType,
+		Field:         extension.Field,
+		Name:          extension.Name,
+		Tag:           extension.Tag,
+		Filename:      extension.Filename,
+	}
 }

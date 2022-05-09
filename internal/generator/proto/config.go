@@ -6,6 +6,7 @@ package proto
 
 type Config struct {
 	Input     InputConfig      `yaml:"input,omitempty"`
+	Output    OutputConfig     `yaml:"output,omitempty"`
 	Templates []TemplateConfig `yaml:"templates,omitempty"`
 }
 
@@ -21,6 +22,10 @@ type InputRepo struct {
 	Tag    string `yaml:"tag,omitempty"`
 }
 
+type OutputConfig struct {
+	Path string `yaml:"path"`
+}
+
 type ModuleConfig struct {
 	Path    string `yaml:"path,omitempty"`
 	Version string `yaml:"version,omitempty"`
@@ -29,11 +34,11 @@ type ModuleConfig struct {
 type TemplateType string
 
 type TemplateConfig struct {
-	Name   string       `yaml:"name,omitempty"`
-	Path   string       `yaml:"path,omitempty"`
-	Output OutputConfig `yaml:"output,omitempty"`
+	Name   string               `yaml:"name,omitempty"`
+	Path   string               `yaml:"path,omitempty"`
+	Output TemplateOutputConfig `yaml:"output,omitempty"`
 }
 
-type OutputConfig struct {
+type TemplateOutputConfig struct {
 	PathTemplate string `yaml:"pathTemplate,omitempty"`
 }

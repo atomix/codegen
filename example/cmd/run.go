@@ -54,12 +54,15 @@ func run(cmd *cobra.Command, args []string) error {
 				},
 				Path: inputPath,
 			},
+			Output: proto.OutputConfig{
+				Path: outputPath,
+			},
 			Templates: []proto.TemplateConfig{
 				{
 					Name: "atom.go",
 					Path: getTemplatePath("atom.go.tpl"),
-					Output: proto.OutputConfig{
-						PathTemplate: "atoms/{{ .Atom | toSnake }}.go",
+					Output: proto.TemplateOutputConfig{
+						PathTemplate: "atoms/{{ .Atom.Name | toSnake }}.go",
 					},
 				},
 			},

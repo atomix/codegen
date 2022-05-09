@@ -24,6 +24,7 @@ func New(name string) *template.Template {
 		"rel":          rel,
 		"toCamel":      toCamelCase,
 		"toLowerCamel": toLowerCamelCase,
+		"toSnake":      toSnakeCase,
 		"lower":        toLowerCase,
 		"upper":        toUpperCase,
 		"upperFirst":   upperFirst,

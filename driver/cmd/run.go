@@ -104,11 +104,14 @@ func run(cmd *cobra.Command, args []string) error {
 			Input: proto.InputConfig{
 				Path: inputPath,
 			},
+			Output: proto.OutputConfig{
+				Path: outputPath,
+			},
 			Templates: []proto.TemplateConfig{
 				{
 					Name: "atom.go",
 					Path: getTemplatePath("atom.go.tpl"),
-					Output: proto.OutputConfig{
+					Output: proto.TemplateOutputConfig{
 						PathTemplate: "driver/{{ .Atom | toSnake }}.go",
 					},
 				},
