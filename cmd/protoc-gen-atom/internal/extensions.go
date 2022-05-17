@@ -7,7 +7,7 @@ package internal
 import (
 	"errors"
 	"fmt"
-	runtimev1 "github.com/atomix/api/pkg/atomix/runtime/v1"
+	runtimev1 "github.com/atomix/runtime/api/atomix/runtime/v1"
 	"github.com/gogo/protobuf/gogoproto"
 	gogoprotobuf "github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/proto" //nolint:staticcheck
