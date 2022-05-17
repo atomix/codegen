@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/atomix/codegen/cmd/protoc-gen-atom/internal"
+	"github.com/atomix/codegen/cmd/protoc-gen-primitive/internal"
 	"github.com/lyft/protoc-gen-star"
 )
 

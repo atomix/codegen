@@ -54,14 +54,14 @@ type TypeParams struct {
 	Values      []TypeParams
 }
 
-// AtomParams is the metadata for an atom
+// AtomParams is the metadata for an primitive
 type AtomParams struct {
 	ServiceParams
 	Manager ManagerParams
 	Name    string
 }
 
-// ManagerParams is the metadata for an atom manager
+// ManagerParams is the metadata for an primitive manager
 type ManagerParams struct {
 	ServiceParams
 }

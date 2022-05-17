@@ -109,8 +109,8 @@ func run(cmd *cobra.Command, args []string) error {
 			},
 			Templates: []proto.TemplateConfig{
 				{
-					Name: "atom.go",
-					Path: getTemplatePath("atom.go.tpl"),
+					Name: "primitive.go",
+					Path: getTemplatePath("primitive.go.tpl"),
 					Output: proto.TemplateOutputConfig{
 						PathTemplate: "driver/{{ .Atom | toSnake }}.go",
 					},

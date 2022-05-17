@@ -44,4 +44,4 @@ RUN mkdir -p /go/src/github.com/google && \
 
 WORKDIR /build
 
-COPY protoc-gen-atom /usr/local/bin/protoc-gen-atom
+COPY protoc-gen-primitive /usr/local/bin/protoc-gen-primitive

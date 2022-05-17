@@ -14,7 +14,7 @@ import (
 	gotemplate "text/template"
 )
 
-const moduleName = "atom"
+const moduleName = "primitive"
 
 // NewModule creates a new proto module
 func NewModule() pgs.Module {
@@ -110,7 +110,7 @@ func (m *Module) getAtomParams(atom *protoAtom) (AtomParams, error) {
 		case runtimev1.OperationType_QUERY:
 			methodTypeParams.IsQuery = true
 		default:
-			return atomParams, errors.New("atom service can only contain COMMAND or QUERY type operations")
+			return atomParams, errors.New("primitive service can only contain COMMAND or QUERY type operations")
 		}
 
 		requestHeaders, err := m.ctx.HeadersFieldParams(method.Input())
