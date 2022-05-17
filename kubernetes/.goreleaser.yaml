@@ -1,0 +1,49 @@
+project_name: atomix-gen-kubernetes
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: atomix-gen-kubernetes
+    main: .
+    binary: atomix-gen-kubernetes
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
+      - -trimpath
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -s
+      - -X github.com/atomix/codegen/pkg/version.shortCommit={{ .ShortCommit }}
+      - -X github.com/atomix/codegen/pkg/version.commit={{ .FullCommit }}
+      - -X github.com/atomix/codegen/pkg/version.version=v{{ .Version }}
+      - -X github.com/atomix/codegen/pkg/version.buildType={{ if .IsSnapshot }}snapshot{{ else }}release{{ end }}
+
+dockers:
+  - id: codegen-kubernetes
+    ids:
+      - atomix-gen-kubernetes
+    image_templates:
+      - "atomix/codegen:kubernetes-latest"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:kubernetes-{{ .Tag }}{{ end }}"
+      - "{{ if (not .IsSnapshot) }}atomix/codegen:kubernetes-v{{ .Major }}.{{ .Minor }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-{{.ShortCommit}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'

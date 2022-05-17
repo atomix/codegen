@@ -3,7 +3,7 @@ module github.com/atomix/codegen
 go 1.18
 
 require (
-	github.com/atomix/runtime v0.0.0-20220517155953-04a4c764b1e6
+	github.com/atomix/runtime v0.0.0-20220517161348-de968c41c7c5
 	github.com/bmatcuk/doublestar/v4 v4.0.2
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
