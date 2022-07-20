@@ -31,7 +31,7 @@ type Config struct {
 }
 
 type ProtoConfig struct {
-	Path  string   `yaml:"path,omitempty"`
+	Path  []string `yaml:"path,omitempty"`
 	Files []string `yaml:"files,omitempty"`
 }
 

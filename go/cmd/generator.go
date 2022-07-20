@@ -38,19 +38,21 @@ func (g *Generator) Generate() error {
 	importMappings["google/protobuf/any.proto"] = "github.com/gogo/protobuf/types"
 	importMappings["google/protobuf/timestamp.proto"] = "github.com/gogo/protobuf/types"
 	importMappings["google/protobuf/duration.proto"] = "github.com/gogo/protobuf/types"
-	for _, pattern := range g.Config.Proto.Files {
-		err := doublestar.GlobWalk(os.DirFS(g.Config.Proto.Path), pattern, func(path string, info fs.DirEntry) error {
-			if info.IsDir() {
+	for _, path := range g.Config.Proto.Path {
+		for _, pattern := range g.Config.Proto.Files {
+			err := doublestar.GlobWalk(os.DirFS(path), pattern, func(path string, info fs.DirEntry) error {
+				if info.IsDir() {
+					return nil
+				}
+				if filepath.Ext(info.Name()) != protoExt {
+					return nil
+				}
+				importMappings[path] = filepath.Join(g.Config.Go.ImportPath, filepath.Dir(path))
 				return nil
+			})
+			if err != nil {
+				return err
 			}
-			if filepath.Ext(info.Name()) != protoExt {
-				return nil
-			}
-			importMappings[path] = filepath.Join(g.Config.Go.ImportPath, filepath.Dir(path))
-			return nil
-		})
-		if err != nil {
-			return err
 		}
 	}
 	return NewGo(g, importMappings).Generate()
@@ -58,8 +60,7 @@ func (g *Generator) Generate() error {
 
 func (g *Generator) gen(file string, spec Spec) error {
 	var path []string
-	path = append(path, ".")
-	path = append(path, g.Config.Proto.Path)
+	path = append(path, g.Config.Proto.Path...)
 	path = append(path, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gogo/protobuf"))
 
 	var args []string
@@ -104,15 +105,21 @@ type GlobGenerator struct {
 }
 
 func (g *GlobGenerator) Generate() error {
-	return doublestar.GlobWalk(os.DirFS(g.Config.Proto.Path), g.Pattern, func(path string, info fs.DirEntry) error {
-		if info.IsDir() {
-			return nil
+	for _, path := range g.Config.Proto.Path {
+		err := doublestar.GlobWalk(os.DirFS(path), g.Pattern, func(path string, info fs.DirEntry) error {
+			if info.IsDir() {
+				return nil
+			}
+			if filepath.Ext(info.Name()) != protoExt {
+				return nil
+			}
+			return NewFile(g, path).Generate()
+		})
+		if err != nil {
+			return err
 		}
-		if filepath.Ext(info.Name()) != protoExt {
-			return nil
-		}
-		return NewFile(g, path).Generate()
-	})
+	}
+	return nil
 }
 
 func NewFile(parent *GlobGenerator, file string) *FileGenerator {

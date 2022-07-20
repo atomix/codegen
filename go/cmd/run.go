@@ -23,11 +23,11 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	protoPath, err := cmd.Flags().GetString("proto-path")
+	protoPaths, err := cmd.Flags().GetStringSlice("proto-path")
 	if err != nil {
 		return err
 	}
-	config.Proto.Path = protoPath
+	config.Proto.Path = append(config.Proto.Path, protoPaths...)
 
 	protoFiles, err := cmd.Flags().GetStringSlice("proto-files")
 	if err != nil {
