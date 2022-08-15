@@ -5,7 +5,7 @@
 package cmd
 
 import (
-	"github.com/atomix/codegen/internal/exec"
+	"github.com/atomix/codegen/pkg/exec"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"

@@ -6,7 +6,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/atomix/codegen/internal/exec"
+	"github.com/atomix/codegen/pkg/exec"
 	"github.com/rogpeppe/go-internal/modfile"
 	"github.com/spf13/cobra"
 	"io"

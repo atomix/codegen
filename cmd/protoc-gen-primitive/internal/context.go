@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/atomix/codegen/internal/generator/template"
+	"github.com/atomix/codegen/pkg/generator/template"
 	runtimev1 "github.com/atomix/runtime/api/atomix/runtime/v1"
 	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"

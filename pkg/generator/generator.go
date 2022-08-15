@@ -5,8 +5,8 @@
 package generator
 
 import (
-	"github.com/atomix/codegen/internal/generator/proto"
-	"github.com/atomix/codegen/internal/generator/template"
+	"github.com/atomix/codegen/pkg/generator/proto"
+	"github.com/atomix/codegen/pkg/generator/template"
 )
 
 func Generate(config Config, values interface{}) error {

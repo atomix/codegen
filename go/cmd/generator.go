@@ -6,7 +6,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/atomix/codegen/internal/exec"
+	"github.com/atomix/codegen/pkg/exec"
 	"github.com/bmatcuk/doublestar/v4"
 	"io/fs"
 	"os"

@@ -5,9 +5,9 @@
 package cmd
 
 import (
-	"github.com/atomix/codegen/internal/generator"
-	"github.com/atomix/codegen/internal/generator/proto"
-	"github.com/atomix/codegen/internal/generator/template"
+	"github.com/atomix/codegen/pkg/generator"
+	"github.com/atomix/codegen/pkg/generator/proto"
+	"github.com/atomix/codegen/pkg/generator/template"
 	"github.com/spf13/cobra"
 	"path/filepath"
 )

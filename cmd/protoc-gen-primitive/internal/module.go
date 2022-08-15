@@ -6,7 +6,7 @@ package internal
 
 import (
 	"errors"
-	"github.com/atomix/codegen/internal/generator/template"
+	"github.com/atomix/codegen/pkg/generator/template"
 	runtimev1 "github.com/atomix/runtime/api/atomix/runtime/v1"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
