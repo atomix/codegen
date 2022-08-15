@@ -106,11 +106,9 @@ func (m *Module) getDescriptor(service pgs.Service) (ServiceParams, error) {
 	}
 
 	return ServiceParams{
-		Type: ServiceTypeParams{
-			EntityParams: m.ctx.EntityParams(service),
-			Name:         pgsgo.PGGUpperCamelCase(service.Name()).String(),
-		},
-		Comment: service.SourceCodeInfo().LeadingComments(),
-		Methods: methods,
+		EntityParams: m.ctx.EntityParams(service),
+		Name:         pgsgo.PGGUpperCamelCase(service.Name()).String(),
+		Comment:      service.SourceCodeInfo().LeadingComments(),
+		Methods:      methods,
 	}, nil
 }

@@ -54,22 +54,12 @@ type TypeParams struct {
 	Values      []TypeParams
 }
 
-// ManagerParams is the metadata for an primitive manager
-type ManagerParams struct {
-	ServiceParams
-}
-
 // ServiceParams is the metadata for a service
 type ServiceParams struct {
-	Type    ServiceTypeParams
+	EntityParams
+	Name    string
 	Comment string
 	Methods []MethodParams
-}
-
-// ServiceTypeParams is metadata for a service type
-type ServiceTypeParams struct {
-	EntityParams
-	Name string
 }
 
 // FieldRefParams is metadata for a field reference
