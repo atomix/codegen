@@ -79,20 +79,16 @@ func (m *Module) getDescriptor(service pgs.Service) (ServiceParams, error) {
 	methods := make(map[string]MethodParams)
 	for _, method := range service.Methods() {
 		requestParams := RequestParams{
-			MessageParams: MessageParams{
-				Type: m.ctx.MessageTypeParams(method.Input()),
-			},
-			IsUnary:  !method.ClientStreaming(),
-			IsStream: method.ClientStreaming(),
+			MessageParams: m.ctx.MessageParams(method.Input()),
+			IsUnary:       !method.ClientStreaming(),
+			IsStream:      method.ClientStreaming(),
 		}
 
 		// Generate output metadata from the output type.
 		responseParams := ResponseParams{
-			MessageParams: MessageParams{
-				Type: m.ctx.MessageTypeParams(method.Output()),
-			},
-			IsUnary:  !method.ServerStreaming(),
-			IsStream: method.ServerStreaming(),
+			MessageParams: m.ctx.MessageParams(method.Output()),
+			IsUnary:       !method.ServerStreaming(),
+			IsStream:      method.ServerStreaming(),
 		}
 
 		methodParams := MethodParams{
