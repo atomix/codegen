@@ -5,9 +5,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: protoc-gen-primitive
-    main: ./cmd/protoc-gen-primitive
-    binary: protoc-gen-primitive
+  - id: protoc-gen-service
+    main: ./cmd/protoc-gen-service
+    binary: protoc-gen-service
     goos:
       - linux
     goarch:
@@ -24,7 +24,7 @@ builds:
 dockers:
   - id: atomix-codegen
     ids:
-      - protoc-gen-primitive
+      - protoc-gen-service
     image_templates:
       - "atomix/codegen:latest"
       - "{{ if (not .IsSnapshot) }}atomix/codegen:{{ .Tag }}{{ end }}"

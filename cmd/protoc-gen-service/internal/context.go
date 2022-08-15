@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/atomix/codegen/pkg/generator/template"
-	runtimev1 "github.com/atomix/runtime/api/atomix/runtime/v1"
 	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
@@ -421,11 +420,6 @@ func (c *Context) EnumValueTypeParams(enumValue pgs.EnumValue) TypeParams {
 		Name:         pgsgo.PGGUpperCamelCase(enumValue.Name()).String(),
 		IsEnumValue:  true,
 	}
-}
-
-// HeadersFieldParams extracts the metadata for the headers field in the given message
-func (c *Context) HeadersFieldParams(message pgs.Message) (*FieldRefParams, error) {
-	return c.findAnnotatedField(message, runtimev1.E_Headers)
 }
 
 func (c *Context) findAnnotatedField(message pgs.Message, extension *proto.ExtensionDesc) (*FieldRefParams, error) {

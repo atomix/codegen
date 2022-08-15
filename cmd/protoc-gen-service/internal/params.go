@@ -7,7 +7,7 @@ package internal
 // Params is the parameters for the code generator
 type Params struct {
 	Imports []PackageParams
-	Atom    AtomParams
+	Service ServiceParams
 	Values  map[string]interface{}
 }
 
@@ -54,13 +54,6 @@ type TypeParams struct {
 	Values      []TypeParams
 }
 
-// AtomParams is the metadata for an primitive
-type AtomParams struct {
-	ServiceParams
-	Manager ManagerParams
-	Name    string
-}
-
 // ManagerParams is the metadata for an primitive manager
 type ManagerParams struct {
 	ServiceParams
@@ -98,9 +91,7 @@ type PathParams struct {
 
 // MethodParams is the metadata for a primitive method
 type MethodParams struct {
-	ID       uint32
 	Name     string
-	Type     MethodTypeParams
 	Comment  string
 	Request  RequestParams
 	Response ResponseParams
@@ -114,7 +105,6 @@ type MessageParams struct {
 // RequestParams is the type metadata for a message
 type RequestParams struct {
 	MessageParams
-	Headers  FieldRefParams
 	IsUnary  bool
 	IsStream bool
 }
@@ -122,15 +112,6 @@ type RequestParams struct {
 // ResponseParams is the type metadata for a message
 type ResponseParams struct {
 	MessageParams
-	Headers  FieldRefParams
 	IsUnary  bool
 	IsStream bool
-}
-
-// MethodTypeParams is the metadata for a store method type
-type MethodTypeParams struct {
-	IsCommand bool
-	IsQuery   bool
-	IsCreate  bool
-	IsClose   bool
 }
