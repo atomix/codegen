@@ -76,7 +76,7 @@ func (m *Module) generateService(service pgs.Service) {
 
 func (m *Module) getDescriptor(service pgs.Service) (ServiceParams, error) {
 	// Iterate through the methods on the service and construct method metadata for the template.
-	methods := make([]MethodParams, 0)
+	methods := make(map[string]MethodParams)
 	for _, method := range service.Methods() {
 		requestParams := RequestParams{
 			MessageParams: MessageParams{
@@ -102,7 +102,7 @@ func (m *Module) getDescriptor(service pgs.Service) (ServiceParams, error) {
 			Response: responseParams,
 		}
 
-		methods = append(methods, methodParams)
+		methods[methodParams.Name] = methodParams
 	}
 
 	return ServiceParams{

@@ -8,7 +8,7 @@ package internal
 type Params struct {
 	Imports []PackageParams
 	Service ServiceParams
-	Values  map[string]interface{}
+	Values  map[string]any
 }
 
 type EntityParams struct {
@@ -59,7 +59,7 @@ type ServiceParams struct {
 	EntityParams
 	Name    string
 	Comment string
-	Methods []MethodParams
+	Methods map[string]MethodParams
 }
 
 // FieldRefParams is metadata for a field reference
@@ -69,8 +69,9 @@ type FieldRefParams struct {
 
 // FieldParams is metadata for a field
 type FieldParams struct {
-	Type TypeParams
-	Path []PathParams
+	Type    TypeParams
+	Path    []PathParams
+	Message *MessageParams
 }
 
 // PathParams is metadata for a field path
@@ -89,7 +90,8 @@ type MethodParams struct {
 
 // MessageParams is the metadata for a message
 type MessageParams struct {
-	Type TypeParams
+	Type   TypeParams
+	Fields map[string]FieldParams
 }
 
 // RequestParams is the type metadata for a message

@@ -117,6 +117,34 @@ func (c *Context) findMessage(typeName string, packages map[string]pgs.Package) 
 	return nil, false
 }
 
+func (c *Context) FieldParams(field pgs.Field) FieldParams {
+	params := FieldParams{
+		Type: c.FieldTypeParams(field),
+		Path: []PathParams{
+			{
+				Name: c.FieldName(field),
+				Type: c.FieldTypeParams(field),
+			},
+		},
+	}
+	if field.Type().IsEmbed() {
+		message := c.MessageParams(field.Message())
+		params.Message = &message
+	}
+	return params
+}
+
+func (c *Context) MessageParams(message pgs.Message) MessageParams {
+	fields := make(map[string]FieldParams)
+	for _, field := range message.Fields() {
+		fields[field.Name().String()] = c.FieldParams(field)
+	}
+	return MessageParams{
+		Type:   c.MessageTypeParams(message),
+		Fields: fields,
+	}
+}
+
 // MessageTypeParams extracts the type metadata for the given message
 func (c *Context) MessageTypeParams(message pgs.Message) TypeParams {
 	return TypeParams{
